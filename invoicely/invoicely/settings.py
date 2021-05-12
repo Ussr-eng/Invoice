@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -22,6 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '3+&@7tdx&pp%5^$4di2d+uu69jnq$&^ho)zs&ia@#x!gilulo7'
 
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -29,7 +32,8 @@ ALLOWED_HOSTS = []
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
-    "http://127.0.0.1:8000"
+    "http://127.0.0.1:8000",
+    "http://192.168.0.104:8080"
 ]
 
 REST_FRAMEWORK = {
@@ -59,9 +63,11 @@ INSTALLED_APPS = [
     'apps.client',
     'apps.team',
     'apps.invoice',
+    'apps.order',
 ]
 
 MIDDLEWARE = [
+
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
@@ -70,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'invoicely.urls'
@@ -128,7 +135,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Etc/GMT+3'
 
 USE_I18N = True
 
@@ -141,3 +148,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+CELERY_BROKER_URL = 'redis://localhost:6379'

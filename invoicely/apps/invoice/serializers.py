@@ -46,7 +46,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "client_place",
             "client_country",
             "client_contact_person",
-            "client_contact_person",
+            "client_contact_reference",
             "sender_reference",
             "invoice_type",
             "due_days",
@@ -59,9 +59,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "items",
             "bankaccount",
             "get_due_date_formatted",
+            "is_credited",
         )
 
     def create(self, validated_data):
+
         items_data = validated_data.pop('items')
         invoice = Invoice.objects.create(**validated_data)
 
@@ -69,5 +71,3 @@ class InvoiceSerializer(serializers.ModelSerializer):
             Item.objects.create(invoice=invoice, **item)
 
         return invoice
-
-
