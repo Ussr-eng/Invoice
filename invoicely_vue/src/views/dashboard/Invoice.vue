@@ -13,8 +13,14 @@
                 <h1 class="title">Invoice - {{ invoice.invoice_number }}</h1>
 
 
-
-                <button @click="getPdf()" class="button is-link is-outlined">Download PDF</button>
+                <div class="buttons">
+                    <button @click="getPdf()" class="button is-link is-outlined">Download PDF</button>
+                    <button @click="sendReminder()" class="button is-info is-outlined" v-if="!invoice.is_paid">Send reminder</button>
+                    <template v-if="!invoice.is_credited">
+                        <button @click="setAsPaid()" class="button is-link is-outlined" v-if="!invoice.is_paid">Set as paid</button>
+                        <button @click="createCreditNote()" class="button is-danger is-outlined" v-if="!invoice.is_paid">Create credit note</button>
+                    </template>
+                </div>
             </div>
 
             <div class="column is-4 mb-4">
@@ -88,6 +94,7 @@
 <script>
 
     import axios from 'axios'
+    import { toast } from 'bulma-toast'
 
     const fileDownload = require('js-file-download')
 
@@ -106,12 +113,12 @@
         methods: {
             getInvoice() {
                 const invoiceId = this.$route.params.id
-                console.log(invoiceId)
+
 
                 axios
                     .get(`/api/v1/invoices/${invoiceId}`)
                     .then(response => {
-                        console.log(response)
+
                         this.invoice = response.data
                     })
                     .catch(error => {
@@ -136,9 +143,11 @@
                 axios
                     .get(`/api/v1/invoices/${invoiceId}/generate_pdf`, {
                         responseType: 'blob',
-                    }).then(response => {
+                    })
+                    .then(response => {
                         fileDownload(response.data, `invoice_${invoiceId}.pdf`);
-                    }).catch(error => {
+                    })
+                    .catch(error => {
                         console.log(error);
                     })
             },
@@ -156,6 +165,7 @@
                     return 'Invoice'
                 }
             },
+
             getItemTotal(item) {
                 const unit_price = item.unit_price
                 const quantity = item.quantity
@@ -163,6 +173,99 @@
                 const total = item.net_amount + (item.net_amount * (item.vat_rate/100))
 
                 return parseFloat(total).toFixed(1)
+            },
+
+            async setAsPaid() {
+                this.invoice.is_paid = true
+
+                let items = this.invoice.items
+                const invoiceID = this.invoice.id
+
+                delete this.invoice["items"]
+
+                await axios
+                    .patch(`/api/v1/invoices/${invoiceID}/`, this.invoice)
+                    .then(response => {
+                        toast({
+                            message: 'The changes was saved',
+                            type: 'is-success',
+                            dismissible: true,
+                            pauseOnHover: true,
+                            duration: 1500,
+                            position: 'bottom-right',
+                        })
+                    })
+                    .catch(error => {
+                        console.log(JSON.stringify(error))
+                    })
+
+                this.invoice.items = items
+            },
+            async createCreditNote() {
+                this.invoice.is_credited = true
+
+                let items = this.invoice.items
+
+                delete this.invoice['items']
+
+                await axios
+                    .patch(`/api/v1/invoices/${this.invoice.id}/`, this.invoice)
+                    .then(response => {
+                        toast({
+                            message: 'The changes was saved',
+                            type: 'is-success',
+                            dismissible: true,
+                            pauseOnHover: true,
+                            duration: 3000,
+                            position: 'bottom-right',
+                        })
+                    })
+                    .catch(error => {
+                        console.log(JSON.stringify(error))
+                    })
+
+                this.invoice.items = items
+
+                let creditNote = this.invoice
+                creditNote.is_credit_for = this.invoice.id
+                creditNote.is_credited = false
+                creditNote.invoice_type = 'credit_note'
+
+                delete creditNote['id']
+
+                await axios
+                    .post('api/v1/invoices/', creditNote)
+                    .then(response => {
+                        toast({
+                            message: 'The credit note was created',
+                            type: 'is-success',
+                            dismissible: true,
+                            pauseOnHover: true,
+                            duration: 3000,
+                            position: 'bottom-right',
+                        })
+                        this.$router.push('/dashboard/invoices')
+                    })
+                    .catch(error => {
+                        console.log(JSON.stringify(error))
+                    })
+            },
+            sendReminder() {
+                axios
+                    .get(`/api/v1/invoices/${this.invoice.id}/send_reminder/`)
+                    .then(response => {
+                        toast({
+                            message: 'The reminder was sent',
+                            type: 'is-success',
+                            dismissible: true,
+                            pauseOnHover: true,
+                            duration: 3000,
+                            position: 'bottom-right',
+                        })
+                    })
+                    .catch(error => {
+                        console.log(JSON.stringify(error))
+                    })
             }
         }
     }

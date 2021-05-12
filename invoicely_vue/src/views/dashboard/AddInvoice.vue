@@ -34,6 +34,7 @@
                     <div class="box mt-4" v-if="invoice.client">
                         <p><strong>{{ invoice.client.name }}</strong></p>
                         <p><strong>Email: </strong>{{ invoice.client.email }}</p>
+                        <p><strong>Id: </strong>{{ invoice.client.id }}</p>
                         <p v-if="invoice.client.address1">{{ invoice.client.address1 }}</p>
                         <p v-if="invoice.client.address2">{{ invoice.client.address2 }}</p>
                         <p v-if="invoice.client.zipcode || invoice.client.place">{{ invoice.client.zipcode }} {{ invoice.client.place }}</p>
@@ -189,6 +190,7 @@
                 this.invoice.client_contact_person = this.invoice.client.contact_person
                 this.invoice.client_contact_reference = this.invoice.client.contact_reference
                 this.invoice.client = this.invoice.client.id
+
 
                 axios
                     .post('/api/v1/invoices/', this.invoice)

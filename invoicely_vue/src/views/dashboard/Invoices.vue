@@ -24,6 +24,7 @@
                             <th>Due date</th>
                             <th>Is paid</th>
                             <th>Details</th>
+                            <th>Delete</th>
                         </tr>
                     </thead>
 
@@ -38,6 +39,7 @@
                             <td>{{ invoice.get_due_date_formatted }}</td>
                             <td>{{ getStatusLabel(invoice) }}</td>
                             <td><router-link :to="{ name: 'Invoice', params: { id: invoice.id }}" class="button is-link is-outlined">Details</router-link></td>
+                            <td><button v-on:click="invoiceDelete(invoice)" class="button is-danger is-outlined">Delete</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -72,6 +74,35 @@
                     .catch(error => {
                         console.log(JSON.stringify(error))
                     })
+            },
+            invoiceDelete(invoice) {
+
+                axios
+                    .delete(`/api/v1/invoices/${invoice.id}`)
+                    .then(response => {
+                        console.log(response.data)
+                    })
+                    .catch(error => {
+                        console.log(JSON.stringify(error))
+                    })
+                this.timer = setTimeout(() => {
+                    axios
+                        .get('/api/v1/invoices/')
+                        .then(response => {
+                            if (response.data.length == 0) {
+                                this.invoices = []
+                            } else {
+                                for (let i = 0; i < response.data.length; i++) {
+                                    this.invoices = []
+                                    this.invoices.push(response.data[i])
+                                }
+                            }
+
+                        })
+                        .catch(error => {
+                            console.log(JSON.stringify(error))
+                        })
+                }, 300)
             },
             getStatusLabel(invoice) {
                 if (invoice.is_paid) {

@@ -1,48 +1,59 @@
 <template>
-  <div id="wrapper">
-    <nav class="navbar is-dark">
-        <div class="navbar-brand">
-            <router-link to="/" class="navbar-item"><strong>Invoicely</strong></router-link>
-        </div>
+    <div id="wrapper">
 
-        <div class="navbar-menu">
-            <template v-if="$store.state.isAuthenticated">
-                <div class="navbar-start">
-                    <router-link to="/dashboard" class="navbar-item">Dashboard</router-link>
-                    <router-link to="/dashboard/clients" class="navbar-item">Clients</router-link>
-                    <router-link :to="{ name: 'Invoices' }" class="navbar-item">Invoices</router-link>
-                </div>
-                <div class="navbar-end">
-                    <div class="navbar-item">
-                        <div class="buttons">
-                            <router-link to="/dashboard/my-account" class="button bold is-blue">My account</router-link>
-                        </div>
+                <nav class="navbar" role="navigation" aria-label="main navigation">
+                    <div class="navbar-brand">
+                        <router-link to="/" class="navbar-item"><strong><a class="fas fa-lemon fa-2x ml-3"></a></strong></router-link>
+
+                        <a class="navbar-burger" @click="burger = !burger" :class="{ 'is-active': burger }">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </a>
                     </div>
-                </div>
-            </template>
+                <div class="navbar-menu" id="navbarBasicExample" @click="burger = !burger" :class="{ 'is-active': burger }">
+                    <template v-if="$store.state.isAuthenticated">
+                        <div class="navbar-start">
+                            <router-link :to="{ name: 'MainPage' }" class="navbar-item" >Home</router-link>
+                            <router-link :to="{ name: 'AllProviders' }" class="navbar-item">Все поставщики</router-link>
+                            <router-link :to="{ name: 'AllOrders' }" class="navbar-item" >Все заказы</router-link>
 
-            <template v-else>
-                <div class="navbar-end">
-                    <div class="navbar-item">
-                        <div class="buttons">
-                            <router-link to="/" class="button is-light">Home</router-link>
-                            <router-link to="/log-in" class="button is-light">log in</router-link>
-                            <router-link to="/sign-up" class="button is-success"><strong>Sign up</strong></router-link>
                         </div>
-                    </div>
+                        <div class="navbar-end">
+                            <div class="navbar-item">
+                                <div class="buttons">
+
+                                    <router-link :to="{ name: 'AddProvider' }" class="button is-success " ><i class="fas fa-plus"></i>поставщик</router-link>
+
+                                    <router-link :to="{ name: 'AddOrder' }" class="button is-success" ><i class="fas fa-plus"></i> заказ</router-link>
+
+                                    <button @click="logout()" class="button is-danger">Выход</button>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </template>
+
+                    <template v-else>
+                        <div class="navbar-end">
+                            <div class="navbar-item">
+                                <div class="buttons">
+
+                                    <router-link to="/log-in" class="button is-light">Войти</router-link>
+                                    <router-link to="/sign-up" class="button is-success"><strong>Регистрация</strong></router-link>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
-            </template>
-        </div>
-    </nav>
+            </nav>
 
-    <section class="section">
-      <router-view/>
-    </section>
+        <section class="section">
+          <router-view/>
+        </section>
+    </div>
 
-    <footer class="footer">
-        <p class="has-text-centered">Copyright (c) 2021</p>
-    </footer>
-  </div>
 </template>
 
 <script>
@@ -60,10 +71,39 @@
             } else {
                 axios.defaults.headers.common['Authorization'] = ""
             }
+        },
+        data () {
+            return {
+                burger: false
+            }
+        },
+        methods: {
+            logout() {
+                axios
+                    .post("/api/v1/token/logout/")
+                    .then(response => {
+
+                        axios.defaults.headers.common["Authorization"] = ""
+
+                        localStorage.removeItem("username")
+                        localStorage.removeItem("userid")
+                        localStorage.removeItem("token")
+
+                        this.$store.commit('removeToken')
+
+                        this.$router.push('/')
+                    })
+            }
         }
+
     }
 </script>
 
+
+
 <style lang="scss">
 @import '../node_modules/bulma';
+@import "~@creativebulma/bulma-divider";
+
 </style>
+
